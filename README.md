@@ -1,7 +1,7 @@
 ## **Measure Voltage of Solarpanels**
 
-*Requirements:*
-Hardware:
+### Requirements:
+Hardware:  
 1x Arduino Uno  
 1x ESP8266-01S  
 1x Voltage Sensor  
@@ -14,13 +14,13 @@ Software:
 1x PostgresDB  
 
 -------
-*Wiring:*  
-
+### Wiring: 
+  
 ![enter image description here](https://i.ibb.co/Kj8YVJC/wiring-bb.png)
 
 ------
 
-*How it works:*  
+### How it works:
 1. Arduino collects the data (collect_data_on_arduino.ino)  
 	Voltage from voltage sensor  
 	Current time from DS3231  
