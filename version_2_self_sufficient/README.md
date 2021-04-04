@@ -28,8 +28,10 @@ Software:
 
  *electronics:*
 
-    2 panels for measuring open circuit voltage, 2 panels for measuring resistor voltage -> internal resistance can be calculated
-    4 panels to operate the NodeMCU, excess energy can be stored in the battery
+    - 2 panels for measuring open circuit voltage, 2 panels for measuring resistor voltage -> internal resistance can be calculated
+    - 4 panels to operate the NodeMCU, excess energy can be stored in the battery
+    - 3.3 V regulator to reduce the voltage comming from the TP4056
+    - capacitor to smooth the voltage for 3.3 V Input of NodeMCU
 
 *application-side:*
 
