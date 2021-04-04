@@ -1,4 +1,4 @@
-## **Measure Voltage of Solarpanels**
+## **Measure Voltage of Solarpanels with external power supply**
 
 ### Requirements:
 Hardware:  
