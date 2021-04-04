@@ -1,5 +1,4 @@
 #include <Arduino.h>
-//#include <NTPClient.h>
 #include <HTTPClient.h>
 #include <esp_adc_cal.h>
 #include <esp_bt_main.h>
@@ -11,14 +10,9 @@
 
 #include ".wificredentials.cpp"
 
-//#include <WiFiUdp.h>
-//#include <WiFi.h>
-
 void connectToWifi()
 {
   WifiCredentials wificredentials;
-
-  //esp_wifi_start();
 
   WiFi.begin(wificredentials.ssid, wificredentials.password);
 
@@ -37,7 +31,7 @@ void initTime()
 
   const char *ntpServer = "pool.ntp.org";
   const long gmtOffset_sec = 0;
-  const int daylightOffset_sec = 3600;
+  const int daylightOffset_sec = 0;
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
@@ -75,7 +69,7 @@ int isTimeLess23()
   const int currenthour = currenttime.tm_hour;
   Serial.println(currenthour);
 
-  if (currenthour >= 23)
+  if (currenthour >= 21) //21 because utc time used == 23 o'clock berlin time
   {
     return 0;
   }
@@ -84,30 +78,6 @@ int isTimeLess23()
     return 1;
   }
 }
-
-/*
-int isTimeLess23()
-{
-  const long utcOffsetInSeconds = 3600;
-  WiFiUDP ntpUDP;
-  NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-
-  timeClient.begin();
-  delay(50);
-  timeClient.update();
-  delay(50);
-  const int currenthour = timeClient.getHours();
-  Serial.println(currenthour);
-
-  if (currenthour >= 23)
-  {
-    return 0;
-  }
-  else
-  {
-    return 1;
-  }
-}*/
 
 float getVoltage(const int pin)
 {
@@ -151,8 +121,7 @@ int sendPostRequest(const float resistor_voltage, const float opencircuit_voltag
 
   http.begin(servername);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httprequestdata = "resistorvoltage=" + String(resistor_voltage, 2) + "&opencircuitvoltage=" + String(opencircuit_voltage, 2);
-  Serial.println(httprequestdata);
+  String httprequestdata = "resistorvoltage=" + String(resistor_voltage, 3) + "&opencircuitvoltage=" + String(opencircuit_voltage, 3);
 
   return http.POST(httprequestdata);
 }
@@ -168,8 +137,13 @@ void loop()
 {
   const int pin_resistor_voltage = 39;
   const int pin_opencircuit_voltage = 35;
-  delay(300);
   connectToWifi();
-  sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage));
+  int status_code = 0;
+  int postrequest_tries = 0;
+  while (status_code != 200 && postrequest_tries < 10)
+  {
+    status_code = sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage));
+    postrequest_tries++;
+  }
   enterSleepMode(isTimeLess23());
 }
