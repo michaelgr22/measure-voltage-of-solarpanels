@@ -6,7 +6,8 @@ Hardware:
     1x ESP32 NodeMCU 
     1x Panasonic NCR18650B (Li-Ion 3.7 V 3400 mAh) 
     1x MCP1700 3.3 V regulator 
-    1x TP4056 8x Solar Panels (1,5 V)   
+    1x TP4056 
+    8x Solar Panels (1,5 V)   
     1x Capacitor (100 microfarads) 
     1x Resistor (220 Ohms)
 
