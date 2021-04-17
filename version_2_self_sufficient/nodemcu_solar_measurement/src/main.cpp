@@ -13,6 +13,8 @@
 
 const int pin_resistor_voltage = 39;
 const int pin_opencircuit_voltage = 35;
+const int pin_sda = 21;
+const int pin_scl = 22;
 
 void connectToWifi()
 {
@@ -52,9 +54,9 @@ void enterSleepMode(const int istimeless23)
   esp_bt_controller_disable();
   esp_wifi_stop();
 
-  //uint64_t sleeptime = 900000000; //900000000 microseconds = 15 minutes
+  uint64_t sleeptime = 900000000; //900000000 microseconds = 15 minutes
   //uint64_t sleeptime = 120000000; //120000000 microseconds = 2 minutes
-  uint64_t sleeptime = 60000000;
+  //uint64_t sleeptime = 60000000;
 
   if (istimeless23 == 0)
   {
@@ -65,7 +67,7 @@ void enterSleepMode(const int istimeless23)
   esp_light_sleep_start();
 }
 
-float readLux()
+float readIlluminance()
 {
   BH1750 lightmeter;
 
@@ -77,8 +79,7 @@ float readLux()
     delay(100);
     counter++;
   }
-  float lux = lightmeter.readLightLevel();
-  return lux;
+  return lightmeter.readLightLevel();
 }
 
 int isTimeLess23()
@@ -135,36 +136,35 @@ float getVoltage(const int pin)
   return voltage_mv / 1000.0;
 }
 
-int sendPostRequest(const float resistor_voltage, const float opencircuit_voltage)
+void sendPostRequest(const float resistor_voltage, const float opencircuit_voltage, const float illuminance)
 {
-  const char *servername = "http://kuberneteshome:30830/sendvoltage-to-postgres.php"; //todo ip
+  const char *servername = "http://kuberneteshome:30830/sendvoltage-to-postgres.php";
   HTTPClient http;
 
   http.begin(servername);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httprequestdata = "resistorvoltage=" + String(resistor_voltage, 3) + "&opencircuitvoltage=" + String(opencircuit_voltage, 3);
+  String httprequestdata = "resistorvoltage=" + String(resistor_voltage, 3) + "&opencircuitvoltage=" + String(opencircuit_voltage, 3) + "&illuminancelux=" + String(illuminance);
 
-  return http.POST(httprequestdata);
+  int status_code = 0;
+  int postrequest_tries = 0;
+  while (status_code != 200 && postrequest_tries < 10)
+  {
+    status_code = http.POST(httprequestdata);
+    postrequest_tries++;
+  }
 }
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Start");
-  Wire.begin(21, 22); //for BH1750
+  Wire.begin(pin_sda, pin_scl); //for BH1750
   initTime();
 }
 
 void loop()
 {
   connectToWifi();
-  readLux();
-  int status_code = 0;
-  int postrequest_tries = 0;
-  while (status_code != 200 && postrequest_tries < 10)
-  {
-    status_code = sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage));
-    postrequest_tries++;
-  }
+  sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage), readIlluminance());
   enterSleepMode(isTimeLess23());
 }
