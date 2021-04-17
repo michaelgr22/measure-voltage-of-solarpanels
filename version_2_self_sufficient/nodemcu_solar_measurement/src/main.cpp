@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <HTTPClient.h>
+#include <BH1750.h>
+#include <Wire.h>
 #include <esp_adc_cal.h>
 #include <esp_bt_main.h>
 #include <esp_bt.h>
@@ -7,8 +9,10 @@
 #include <esp_sleep.h>
 #include <string.h>
 #include "time.h"
-
 #include ".wificredentials.cpp"
+
+const int pin_resistor_voltage = 39;
+const int pin_opencircuit_voltage = 35;
 
 void connectToWifi()
 {
@@ -48,8 +52,9 @@ void enterSleepMode(const int istimeless23)
   esp_bt_controller_disable();
   esp_wifi_stop();
 
-  uint64_t sleeptime = 900000000; //900000000 microseconds = 15 minutes
+  //uint64_t sleeptime = 900000000; //900000000 microseconds = 15 minutes
   //uint64_t sleeptime = 120000000; //120000000 microseconds = 2 minutes
+  uint64_t sleeptime = 60000000;
 
   if (istimeless23 == 0)
   {
@@ -58,6 +63,22 @@ void enterSleepMode(const int istimeless23)
 
   esp_sleep_enable_timer_wakeup(sleeptime);
   esp_light_sleep_start();
+}
+
+float readLux()
+{
+  BH1750 lightmeter;
+
+  lightmeter.begin(BH1750::ONE_TIME_HIGH_RES_MODE);
+
+  int counter = 0;
+  while (!lightmeter.measurementReady(true) && counter < 10)
+  {
+    delay(100);
+    counter++;
+  }
+  float lux = lightmeter.readLightLevel();
+  return lux;
 }
 
 int isTimeLess23()
@@ -130,14 +151,14 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Start");
+  Wire.begin(21, 22); //for BH1750
   initTime();
 }
 
 void loop()
 {
-  const int pin_resistor_voltage = 39;
-  const int pin_opencircuit_voltage = 35;
   connectToWifi();
+  readLux();
   int status_code = 0;
   int postrequest_tries = 0;
   while (status_code != 200 && postrequest_tries < 10)
