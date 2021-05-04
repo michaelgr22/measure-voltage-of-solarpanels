@@ -16,19 +16,23 @@ const int pin_opencircuit_voltage = 35;
 const int pin_sda = 21;
 const int pin_scl = 22;
 
-void connectToWifi()
+bool connectToWifi()
 {
   WifiCredentials wificredentials;
 
   WiFi.begin(wificredentials.ssid, wificredentials.password);
 
-  while (WiFi.status() != WL_CONNECTED)
+  int wificounter = 0;
+  while (WiFi.status() != WL_CONNECTED && wificounter < 10)
   {
     delay(500);
     Serial.print(".");
+    wificounter++;
   }
 
   Serial.println("Connected to Wifi");
+
+  return WiFi.isConnected();
 }
 
 void initTime()
@@ -67,7 +71,7 @@ void enterSleepMode(const int istimeless23)
   esp_light_sleep_start();
 }
 
-float readIlluminance()
+float getIlluminance()
 {
   BH1750 lightmeter;
 
@@ -164,7 +168,9 @@ void setup()
 
 void loop()
 {
-  connectToWifi();
-  sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage), readIlluminance());
+  if (connectToWifi())
+  {
+    sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage), getIlluminance());
+  }
   enterSleepMode(isTimeLess23());
 }
