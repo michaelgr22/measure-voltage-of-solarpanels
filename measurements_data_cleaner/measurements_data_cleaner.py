@@ -1,6 +1,5 @@
 import config
 import sys
-from datetime import datetime
 
 from postgresdb import PostgresDB
 from solarmeasurement_model import SolarMeasurementModel
