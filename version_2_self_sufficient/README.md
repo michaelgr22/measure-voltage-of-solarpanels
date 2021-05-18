@@ -10,6 +10,7 @@ Hardware:
     8x Solar Panels (1,5 V)   
     1x Capacitor (100 microfarads) 
     1x Resistor (220 Ohms)
+    1x BH1750 Light Sensor
 
   
 Software:  
@@ -20,7 +21,7 @@ Software:
 -------
 ### Wiring: 
   
-![enter image description here](https://i.ibb.co/NjzJXbx/v2-fritzing-bb.png)
+![enter image description here](https://i.ibb.co/gvGW30m/v2-fritzing-bb.png)
 
 ------
 
