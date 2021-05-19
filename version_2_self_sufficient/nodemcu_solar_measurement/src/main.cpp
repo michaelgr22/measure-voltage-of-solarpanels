@@ -35,21 +35,7 @@ bool connectToWifi()
   return WiFi.isConnected();
 }
 
-void initTime()
-{
-  connectToWifi();
-
-  const char *ntpServer = "pool.ntp.org";
-  const long gmtOffset_sec = 0;
-  const int daylightOffset_sec = 0;
-
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
-}
-
-void enterSleepMode(const int istimeless23)
+void enterSleepMode()
 {
   WiFi.disconnect(true);
   delay(300);
@@ -60,12 +46,7 @@ void enterSleepMode(const int istimeless23)
 
   uint64_t sleeptime = 900000000; //900000000 microseconds = 15 minutes
   //uint64_t sleeptime = 120000000; //120000000 microseconds = 2 minutes
-  //uint64_t sleeptime = 60000000;
-
-  if (istimeless23 == 0)
-  {
-    sleeptime = 13500000000; //13500000000 microseconds = 3,75 h
-  }
+  //sleeptime = 13500000000; 13500000000 microseconds = 3,75 h
 
   esp_sleep_enable_timer_wakeup(sleeptime);
   esp_light_sleep_start();
@@ -84,25 +65,6 @@ float getIlluminance()
     counter++;
   }
   return lightmeter.readLightLevel();
-}
-
-int isTimeLess23()
-{
-  struct tm currenttime;
-
-  getLocalTime(&currenttime);
-
-  const int currenthour = currenttime.tm_hour;
-  Serial.println(currenthour);
-
-  if (currenthour >= 21) //21 because utc time used == 23 o'clock berlin time
-  {
-    return 0;
-  }
-  else
-  {
-    return 1;
-  }
 }
 
 float getVoltage(const int pin)
@@ -163,7 +125,6 @@ void setup()
   Serial.begin(115200);
   Serial.println("Start");
   Wire.begin(pin_sda, pin_scl); //for BH1750
-  initTime();
 }
 
 void loop()
@@ -172,5 +133,5 @@ void loop()
   {
     sendPostRequest(getVoltage(pin_resistor_voltage), getVoltage(pin_opencircuit_voltage), getIlluminance());
   }
-  enterSleepMode(isTimeLess23());
+  enterSleepMode();
 }
