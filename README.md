@@ -25,3 +25,6 @@ The graph shows clearly a curve like a diode.
 
 As you can see the open-circuit-voltage of a solar cell changes with the natural logarithm of the irradiance.
 
+## App to track live data:
+https://github.com/michaelgr22/solar_measurement_app
+
